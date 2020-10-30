@@ -1,17 +1,22 @@
-FROM debian:bullseye-slim
+FROM ubuntu:bionic
 MAINTAINER Salvador E. Tropea <stropea@inti.gob.ar>
 MAINTAINER Roman Dvorak <romandvorak@mlab.cz>
 LABEL Description="Minimal KiCad image based on Debian"
 
-COPY *.list /
-RUN	apt-get -y update && \
-	apt-get -y install --no-install-recommends gnupg2 && \
-	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA854F61C4D0D9572BB95E5245D5502FAD7A805  && \
-	apt-get -y remove gnupg2 && \
-	mv /*.list /etc/apt/sources.list.d/ && \
-	apt-get -y update && \
-	apt-get -y install --no-install-recommends kicad-nightly kicad-nightly-symbols kicad-nightly-footprints && \
-	apt-get -y autoremove && \
-	rm -rf /var/lib/apt/lists/* \
-	rm -rf /usr/share/icons/Adwaita/
-COPY *-lib-table /usr/share/kicad-nightly/template/
+#  COPY *.list /
+RUN	apt-get update -y && apt-get upgrade -y && apt-get install -y --no-install-recommends software-properties-common locales apt-utils
+# RUN locale-gen --purge en_US.UTF-8
+# RUN echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale
+# ENV LC_ALL en_US.UTF-8
+# ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
+RUN add-apt-repository --yes ppa:kicad/kicad-dev-nightly
+RUN apt-get update -y
+RUN apt-get install -y kicad-nightly
+RUN apt-get install -y kicad-nightly-footprints kicad-nightly-libraries kicad-nightly-symbols kicad-nightly-templates
+#RUN apt-get install -y kicad-nightly-packages3d
+
+# COPY *-lib-table /usr/share/kicad-nightly/template/
